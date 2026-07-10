@@ -195,6 +195,7 @@ def plot_scan(result: dict, var_name: str, out_png: str, title: str = ""):
             {"name": "bkg_rej", "role": "efficiency", "values": result["bkg_rej"]},
         ],
         "blinded_region_shown": False,
+        "legend": True,
         "lumi_stamp": "n/a (MC/SB optimization plot)",
     }
     with open(out_png.replace(".png", "") + ".plot.json", "w") as f:

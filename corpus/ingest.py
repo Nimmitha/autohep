@@ -40,9 +40,9 @@ def _get_with_backoff(url, retries=4, base_wait=10, **kwargs):
 
     for attempt in range(retries):
         r = requests.get(url, timeout=120, **kwargs)
-        if r.status_code == 429 and attempt < retries - 1:
+        if r.status_code in (429, 500, 502, 503) and attempt < retries - 1:
             wait = base_wait * (2 ** attempt)
-            print(f"  429 from {url.split('?')[0]} — backing off {wait}s",
+            print(f"  {r.status_code} from {url.split('?')[0]} — backing off {wait}s",
                   file=sys.stderr)
             time.sleep(wait)
             continue
@@ -184,7 +184,14 @@ def ingest_one(aid: str, index_dir: str) -> dict:
     out_path = os.path.join(index_dir, aid.replace("/", "_") + ".json")
     if os.path.exists(out_path):
         return {"arxiv_id": aid, "status": "cached"}
-    meta = fetch_metadata(aid)
+    meta_ok = True
+    try:
+        meta = fetch_metadata(aid)
+    except Exception as e:
+        # export API outage should not block source ingestion
+        meta = {"arxiv_id": aid, "title": "", "abstract": "", "authors": []}
+        meta_ok = False
+        print(f"  metadata fetch failed for {aid}: {e}", file=sys.stderr)
     time.sleep(3)
     try:
         files = fetch_source(aid)
@@ -192,6 +199,10 @@ def ingest_one(aid: str, index_dir: str) -> dict:
         status = "ok" if sections else "metadata_only"
     except Exception as e:
         sections, status = [], f"source_failed: {e}"
+    if not meta_ok:
+        status += "+metadata_failed"
+    if not sections and not meta_ok:
+        return {"arxiv_id": aid, "status": "failed_entirely (not cached)"}
     doc = {**meta, "ingested": time.strftime("%Y-%m-%d"),
            "sections": sections, "status": status}
     with open(out_path, "w") as f:

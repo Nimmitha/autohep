@@ -62,8 +62,12 @@ def _stats(x: np.ndarray) -> dict:
     return out
 
 
-def _find_peaks(x: np.ndarray, nbins: int = 200) -> list[dict]:
-    """Crude peak finder: local maxima above smooth background in a histogram."""
+def _find_peaks(x: np.ndarray, nbins: int = 80) -> list[dict]:
+    """Peak finder: local maxima above a donut-median background estimate.
+
+    For each bin the background is the median of counts in the annulus
+    [i-3k, i-k] U [i+k, i+3k]; the median is robust against the peak itself
+    leaking into the estimate (a moving average is not). Edges are skipped."""
     xf = x[np.isfinite(x)]
     if xf.size < 200:
         return []
@@ -72,19 +76,21 @@ def _find_peaks(x: np.ndarray, nbins: int = 200) -> list[dict]:
         return []
     counts, edges = np.histogram(xf, bins=nbins, range=(lo, hi))
     centers = 0.5 * (edges[:-1] + edges[1:])
-    # smooth background: broad moving average
-    k = max(nbins // 20, 3)
-    kern = np.ones(2 * k + 1) / (2 * k + 1)
-    bkg = np.convolve(counts, kern, mode="same")
-    excess = counts - bkg
-    sigma = np.sqrt(np.maximum(bkg, 1.0))
-    signif = excess / sigma
+    k = max(nbins // 10, 4)
     peaks = []
-    for i in range(2, nbins - 2):
-        if signif[i] > 4.0 and counts[i] == counts[max(0, i - 2): i + 3].max():
+    for i in range(k, nbins - k):
+        left = counts[max(0, i - 3 * k): max(0, i - k)]
+        right = counts[i + k: i + 3 * k]
+        annulus = np.concatenate([left, right])
+        if annulus.size < k:
+            continue
+        bkg = float(np.median(annulus))
+        signif = (counts[i] - bkg) / np.sqrt(max(bkg, 1.0))
+        window = counts[max(0, i - 2): i + 3]
+        if signif > 4.0 and counts[i] == window.max():
             peak = {
                 "position": float(centers[i]),
-                "local_significance": float(signif[i]),
+                "local_significance": float(signif),
                 "bin_width": float(edges[1] - edges[0]),
             }
             for name, m in PDG_PEAKS.items():
@@ -92,8 +98,14 @@ def _find_peaks(x: np.ndarray, nbins: int = 200) -> list[dict]:
                     peak["pdg_candidate"] = name
                     peak["pdg_mass"] = m
             peaks.append(peak)
+    # deduplicate: keep the most significant bin per contiguous cluster
     peaks.sort(key=lambda p: -p["local_significance"])
-    return peaks[:8]
+    kept: list[dict] = []
+    min_sep = 2 * k * float(edges[1] - edges[0])
+    for p in peaks:
+        if all(abs(p["position"] - q["position"]) > min_sep for q in kept):
+            kept.append(p)
+    return kept[:8]
 
 
 def probe_arrays(arrays: dict, correlations: bool = True) -> dict:
@@ -132,8 +144,12 @@ def probe_arrays(arrays: dict, correlations: bool = True) -> dict:
         report["branches"][name] = entry
 
     if correlations and len(flat) >= 2:
-        names = sorted(flat)
-        n = min(min(len(v) for v in flat.values()), 50_000)
+        # constant branches have zero variance — exclude from correlations
+        names = sorted(k for k, v in flat.items()
+                       if np.nanstd(v[:50_000]) > 0)
+        if len(names) < 2:
+            return report
+        n = min(min(len(flat[k]) for k in names), 50_000)
         mat = np.vstack([flat[k][:n] for k in names])
         ok = np.isfinite(mat).all(axis=0)
         if ok.sum() > 100:

@@ -53,26 +53,24 @@ def record(recid: int) -> dict:
 
 
 def file_urls(recid: int, limit: int | None = None) -> list[dict]:
-    """Return [{'uri', 'size', 'checksum'}] for a record. Records with large
-    file counts publish *file-index* JSON files; those are expanded."""
+    """Return [{'uri', 'size', 'checksum'}] for a record.
+
+    Dataset records list payload files under `_file_indices[].files`; small
+    records may use the plain `files` list instead. Both are handled."""
     md = record(recid)
-    files = md.get("files", [])
     out = []
-    for f in files:
-        uri = f.get("uri", "")
-        if uri.endswith("_file_index.json") or f.get("key", "").endswith(
-                "_file_index.json"):
-            try:
-                idx = _get(_https(uri))
-                for entry in idx:
-                    out.append({"uri": entry.get("uri"),
-                                "size": entry.get("size"),
-                                "checksum": entry.get("checksum")})
-            except Exception as e:
-                out.append({"uri": uri, "error": f"index fetch failed: {e}"})
-        elif not uri.endswith("_file_index.txt"):
-            out.append({"uri": uri, "size": f.get("size"),
-                        "checksum": f.get("checksum")})
+    for idx in md.get("_file_indices", []):
+        for f in idx.get("files", []):
+            out.append({"uri": f.get("uri"), "size": f.get("size"),
+                        "checksum": f.get("checksum"),
+                        "filename": f.get("filename")})
+    if not out:
+        for f in md.get("files", []):
+            uri = f.get("uri", "")
+            if uri and not uri.endswith((".json", ".txt")):
+                out.append({"uri": uri, "size": f.get("size"),
+                            "checksum": f.get("checksum"),
+                            "filename": f.get("key")})
     return out[:limit] if limit else out
 
 
