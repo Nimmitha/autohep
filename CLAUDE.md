@@ -36,6 +36,16 @@ review board.
   arbiter is forbidden from downgrading them.
 - **Study isolation**: a study reads only its own repo, `framework/`, `tools/`,
   and `corpus/`. It must not read other studies or any external analysis code.
+- **Framework changes are human-gated**: `tools/`, `framework/`, `.claude/`,
+  `templates/`, `tests/`, and corpus code are under ask-rules — every edit
+  requires an interactive human approval. Before requesting one, ESCALATE with
+  (a) a minimal reproduction, (b) the proposed patch, and (c) the study-side
+  impact, and wait for the human's go-ahead. An approved fix MUST ship with a
+  regression test, pass the full suite (`pytest tests/ -q`), be committed to
+  the FRAMEWORK repo (never the study repo), and be followed by the study
+  re-pinning `framework_commit` in its manifest with the escalation → fix →
+  re-pin trail logged. Never weaken a validator or blinding check to make a
+  review pass — that is a Category A violation regardless of approval.
 - **No pandas.** Arrays are numpy/awkward; histograms are hist/boost-histogram.
 
 ## Layout

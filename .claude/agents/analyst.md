@@ -34,6 +34,12 @@ Rules of engagement:
    note, paper) in full sentences with every number traceable to a logged artifact.
    State uncertainties and known weaknesses honestly — reviewers are told to hunt
    for omissions.
+8. If you hit a framework bug (in `tools/`, `framework/`, agents, skills,
+   templates), do not fix it yourself: report it to the orchestrator as an
+   escalation with a minimal reproduction, your proposed patch, and the
+   study-side impact. Framework edits are human-gated and applied through the
+   orchestrator's escalation route; work around nothing silently, and never
+   touch a validator or blinding check to get a passing result.
 
 Deliverable per invocation: the phase artifact written to the study repo, all
 figures manifest-validated, and a final message listing artifact paths and the

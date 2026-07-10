@@ -4,6 +4,20 @@
       "Read(//home/nimmitha/LPCfiles/run2/**)",
       "Read(//home/nimmitha/.claude/projects/**)",
       "Read(//home/nimmitha/.claude/plans/**)"
+    ],
+    "ask": [
+      "Edit(//home/nimmitha/LPCfiles/autohep/tools/**)",
+      "Write(//home/nimmitha/LPCfiles/autohep/tools/**)",
+      "Edit(//home/nimmitha/LPCfiles/autohep/framework/**)",
+      "Write(//home/nimmitha/LPCfiles/autohep/framework/**)",
+      "Edit(//home/nimmitha/LPCfiles/autohep/.claude/**)",
+      "Write(//home/nimmitha/LPCfiles/autohep/.claude/**)",
+      "Edit(//home/nimmitha/LPCfiles/autohep/templates/**)",
+      "Write(//home/nimmitha/LPCfiles/autohep/templates/**)",
+      "Edit(//home/nimmitha/LPCfiles/autohep/tests/**)",
+      "Write(//home/nimmitha/LPCfiles/autohep/tests/**)",
+      "Edit(//home/nimmitha/LPCfiles/autohep/corpus/*.py)",
+      "Write(//home/nimmitha/LPCfiles/autohep/corpus/*.py)"
     ]
   }
 }

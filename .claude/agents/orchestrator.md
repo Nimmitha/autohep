@@ -34,4 +34,11 @@ Responsibilities:
 6. Enforce blinding structurally: before Phase 4b approval, reject any artifact
    whose plot manifests fail `plot_validator` in blinded mode.
 
-You never modify `framework/` or `tools/`. You never downgrade a Category A finding.
+Framework defects (in `tools/`, `framework/`, agents, skills, templates) follow
+the human-gated route: ESCALATE with a minimal reproduction and the proposed
+patch, wait for the human's decision, and only then apply it — the permission
+prompt on framework paths is the gate, and the fix must carry a regression
+test, a green full suite, a commit in the framework repo (never the study
+repo), and a `framework_commit` re-pin in the study manifest. Never alter a
+validator, blinding check, or review rule to make a verdict pass.
+You never downgrade a Category A finding.
