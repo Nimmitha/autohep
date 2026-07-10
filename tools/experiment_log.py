@@ -65,7 +65,13 @@ class ExperimentLog:
 
     # -- API ---------------------------------------------------------------
     def append(self, kind: str, agent: str, summary: str, phase: str = "",
-               detail: dict | None = None, artifacts: list[str] | None = None) -> dict:
+               detail: dict | None = None, artifacts: list[str] | None = None,
+               allow_missing: bool = False) -> dict:
+        """Append one entry. Artifact paths are resolved RELATIVE TO THE STUDY
+        DIR; a path that does not resolve raises FileNotFoundError so that
+        integrity pinning can never silently fail (pass allow_missing=True
+        only to reference an artifact that is intentionally not yet created).
+        """
         if kind not in KINDS:
             raise ValueError(f"unknown log kind {kind!r}; allowed: {sorted(KINDS)}")
         entries = self._entries()
@@ -77,8 +83,14 @@ class ExperimentLog:
             if os.path.exists(full):
                 rec["sha256"] = _sha256(full)
                 rec["bytes"] = os.path.getsize(full)
-            else:
+            elif allow_missing:
                 rec["missing"] = True
+            else:
+                raise FileNotFoundError(
+                    f"artifact {rel!r} does not resolve (tried {full!r}); "
+                    "artifact paths are relative to the study dir "
+                    f"{self.study_dir!r} — fix the path or pass allow_missing "
+                    "to record a not-yet-created artifact")
             art_records.append(rec)
         payload = {
             "id": len(entries),
@@ -107,11 +119,15 @@ class ExperimentLog:
                 problems.append(f"entry {i}: chain hash mismatch (log was edited)")
             prev_hash = chain
             for art in e.get("artifacts", []):
+                full = os.path.join(self.study_dir, art["path"])
                 if "sha256" in art:
-                    full = os.path.join(self.study_dir, art["path"])
                     if os.path.exists(full) and _sha256(full) != art["sha256"]:
                         problems.append(
                             f"entry {i}: artifact {art['path']} changed since logging")
+                elif art.get("missing") and os.path.exists(full):
+                    problems.append(
+                        f"entry {i}: artifact {art['path']} was logged missing but "
+                        "now exists — re-log it to pin its hash")
         return problems
 
 
@@ -127,7 +143,10 @@ def main(argv=None):
     ap.add_argument("--phase", default="")
     ap.add_argument("--summary", required=True)
     ap.add_argument("--detail-json", default="{}")
-    ap.add_argument("--artifact", action="append", default=[])
+    ap.add_argument("--artifact", action="append", default=[],
+                    help="path RELATIVE TO THE STUDY DIR; must exist unless "
+                         "--allow-missing")
+    ap.add_argument("--allow-missing", action="store_true")
 
     vp = sub.add_parser("verify")
     vp.add_argument("study_dir")
@@ -140,7 +159,8 @@ def main(argv=None):
     log = ExperimentLog(a.study_dir)
     if a.cmd == "append":
         e = log.append(a.kind, a.agent, a.summary, a.phase,
-                       json.loads(a.detail_json), a.artifact)
+                       json.loads(a.detail_json), a.artifact,
+                       allow_missing=a.allow_missing)
         print(json.dumps({"id": e["id"], "chain": e["chain"][:12]}))
     elif a.cmd == "verify":
         problems = log.verify()

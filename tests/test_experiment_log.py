@@ -42,3 +42,29 @@ def test_unknown_kind_rejected(tmp_path):
     log = ExperimentLog(str(tmp_path))
     with pytest.raises(ValueError):
         log.append("banana", "analyst", "nope")
+
+
+def test_unresolvable_artifact_path_fails_loudly(tmp_path):
+    """A wrong (e.g. repo-root-relative) artifact path must raise, never be
+    silently recorded as missing - integrity pinning depends on it."""
+    log = ExperimentLog(str(tmp_path))
+    with pytest.raises(FileNotFoundError, match="relative to the study dir"):
+        log.append("artifact", "analyst", "bad path", "phase1",
+                   artifacts=["studies/foo/STRATEGY.md"])
+    # nothing was written
+    assert log._entries() == []
+
+
+def test_allow_missing_and_verify_flags_unpinned(tmp_path):
+    log = ExperimentLog(str(tmp_path))
+    log.append("note", "analyst", "aspirational artifact", "phase1",
+               artifacts=["STRATEGY.md"], allow_missing=True)
+    assert log.verify() == []  # file genuinely absent: acceptable
+    (tmp_path / "STRATEGY.md").write_text("now it exists")
+    problems = log.verify()
+    assert any("re-log it to pin" in p for p in problems)
+    # re-logging with the hash pins it; the earlier flag remains visible in
+    # verify output, which is the audit trail doing its job
+    e = log.append("artifact", "analyst", "strategy pinned", "phase1",
+                   artifacts=["STRATEGY.md"])
+    assert e["artifacts"][0]["sha256"]
