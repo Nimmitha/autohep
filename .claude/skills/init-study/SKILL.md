@@ -23,17 +23,21 @@ Creates `studies/<study-name>/` as an independent git repository.
     "iteration": 0, "blinded": true, "blinded_window": null,
     "frozen": {}, "framework_commit": "<git rev-parse HEAD of autohep>"}
    ```
-5. Write the study `.claude/settings.json` deny rules so the study cannot read
-   external analysis code (clean-room isolation), e.g.:
+5. Write clean-room deny rules so the study cannot read external analysis code.
+   Sessions load settings from the directory they start in, so the rules must be
+   in BOTH `<autohep>/.claude/settings.json` (sessions start at the framework
+   root) and the study's own `.claude/settings.json` (defense in depth), e.g.:
    ```json
    {"permissions": {"deny": [
-       "Read(//home/nimmitha/LPCfiles/run2/reboot/ml_reboot/**)",
-       "Read(//home/nimmitha/LPCfiles/run2/reboot/cutbasedanalyzer/**)",
-       "Read(//home/nimmitha/LPCfiles/run2/reboot/zmmjmm/**)",
-       "Read(//home/nimmitha/LPCfiles/run2/reboot/zeejmm/**)"
+       "Read(//home/nimmitha/LPCfiles/run2/**)",
+       "Read(//home/nimmitha/.claude/projects/**)",
+       "Read(//home/nimmitha/.claude/plans/**)"
    ]}}
    ```
    Add any extra paths the user names as prior-knowledge sources to exclude.
+   Also verify no ancestor directory of the framework carries a CLAUDE.md that
+   describes the analysis being reproduced (ancestor CLAUDE.md files are
+   auto-loaded into every session).
 6. `git init` inside the study dir, first commit ("study scaffold"), and log the
    creation: `python tools/experiment_log.py append studies/<name> --kind note
    --agent orchestrator --summary "study initialized"`.

@@ -195,8 +195,16 @@ def ingest_one(aid: str, index_dir: str) -> dict:
     time.sleep(3)
     try:
         files = fetch_source(aid)
-        sections = split_sections(_main_tex(files)) if files else []
+        tex = _main_tex(files) if files else ""
+        sections = split_sections(tex) if tex else []
         status = "ok" if sections else "metadata_only"
+        if not meta.get("title") and tex:
+            # export-API outage fallback: take the title from the LaTeX source
+            m = re.search(r"\\title\s*(?:\[[^\]]*\])?\s*\{([^{}]*(?:\{[^{}]*\}"
+                          r"[^{}]*)*)\}", tex)
+            if m:
+                meta["title"] = " ".join(
+                    re.sub(r"\\[a-zA-Z]+|[{}$]", " ", m.group(1)).split())
     except Exception as e:
         sections, status = [], f"source_failed: {e}"
     if not meta_ok:

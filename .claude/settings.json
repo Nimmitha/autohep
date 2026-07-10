@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(//home/nimmitha/LPCfiles/run2/**)",
+      "Read(//home/nimmitha/.claude/projects/**)",
+      "Read(//home/nimmitha/.claude/plans/**)"
+    ]
+  }
+}
