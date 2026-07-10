@@ -1,0 +1,27 @@
+# autohep seed corpus — rare Higgs / quarkonia / 4-lepton searches + methods.
+# One arXiv id per line; '#' comments. Extend freely via INSPIRE-HEP searches
+# (e.g. "Higgs rare decay quarkonium", "H to ZZ four lepton").
+# ingest.py fails loudly on unknown ids — verify additions against arxiv.org.
+
+# --- Higgs discovery & H->ZZ->4l ---
+1207.7235      # CMS: Observation of a new boson at 125 GeV
+1312.5353      # CMS: Higgs properties in the four-lepton final state (Run 1)
+1706.09936     # CMS: H->ZZ->4l properties at 13 TeV
+
+# --- rare / exclusive Higgs and Z decays to quarkonia ---
+1501.03276     # ATLAS: H/Z -> J/psi gamma, Upsilon(nS) gamma search
+1807.00802     # ATLAS: exclusive H/Z -> J/psi gamma, psi(2S) gamma, Upsilon gamma
+1905.10408     # CMS: H->Z J/psi and H/Z -> quarkonium pairs search
+1712.02758     # ATLAS: exclusive H/Z -> phi gamma, rho gamma search
+2309.03501     # ATLAS+CMS: evidence for H -> Z gamma
+2009.04363     # CMS: evidence for H -> mu mu
+1306.5770      # Bodwin et al.: Higgs decays to quarkonia and Hcc coupling
+
+# --- statistical methods ---
+1007.1727      # Cowan, Cranmer, Gross, Vitells: asymptotic formulae for LHC statistics
+physics/0308063 # Punzi: sensitivity optimization for searches
+2404.06614     # CMS: the Combine statistical analysis tool
+
+# --- multivariate methods ---
+1603.02754     # Chen, Guestrin: XGBoost
+physics/0703039 # TMVA: toolkit for multivariate analysis (baseline reference)

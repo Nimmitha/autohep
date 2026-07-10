@@ -1,0 +1,10 @@
+# data payloads and derived arrays are never committed to the study repo
+data/user/
+data/opendata/
+data/derived/
+*.root
+*.npz
+__pycache__/
+*.pyc
+# compiled docs are rebuilt from source; keep final PDFs of gated artifacts
+phases/**/build/
