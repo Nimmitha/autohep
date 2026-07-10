@@ -63,8 +63,28 @@ def test_allow_missing_and_verify_flags_unpinned(tmp_path):
     (tmp_path / "STRATEGY.md").write_text("now it exists")
     problems = log.verify()
     assert any("re-log it to pin" in p for p in problems)
-    # re-logging with the hash pins it; the earlier flag remains visible in
-    # verify output, which is the audit trail doing its job
+    # re-logging with the hash pins it and supersedes the missing-flag record
     e = log.append("artifact", "analyst", "strategy pinned", "phase1",
                    artifacts=["STRATEGY.md"])
     assert e["artifacts"][0]["sha256"]
+    assert log.verify() == []
+
+
+def test_superseded_pin_not_flagged_latest_pin_enforced(tmp_path):
+    """A re-logged (revised) artifact supersedes earlier pins of the same
+    path: verify checks the file against the latest pin only, so a legitimate
+    ITERATE revision does not poison verify forever - but tampering with the
+    file after its latest pin is still caught."""
+    art = tmp_path / "STRATEGY.md"
+    art.write_text("strategy v1")
+    log = ExperimentLog(str(tmp_path))
+    log.append("artifact", "analyst", "strategy v1", "phase1",
+               artifacts=["STRATEGY.md"])
+    art.write_text("strategy v2 (iteration remediation)")
+    assert any("changed since logging" in p for p in log.verify())
+    log.append("artifact", "analyst", "strategy v2 re-pinned", "phase1",
+               artifacts=["STRATEGY.md"])
+    assert log.verify() == []  # old pin superseded, latest pin matches
+    art.write_text("strategy v2 -- tampered after pinning")
+    problems = log.verify()
+    assert len(problems) == 1 and "changed since logging" in problems[0]

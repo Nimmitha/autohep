@@ -108,10 +108,25 @@ class ExperimentLog:
         return payload
 
     def verify(self) -> list[str]:
-        """Return a list of problems (empty == log is intact)."""
+        """Return a list of problems (empty == log is intact).
+
+        Chain hashes are checked for every entry. Artifact contents are
+        checked against the LATEST pin of each path only: an artifact
+        legitimately revised during a review iteration is re-logged with a
+        new hash, which supersedes earlier pins of the same path. Superseded
+        pins stay in the log as history whose integrity is guaranteed by the
+        chain hash (and the study's VCS), not by comparison with the current
+        file — otherwise any ITERATE revision would make verify permanently
+        unsatisfiable.
+        """
         problems = []
+        entries = self._entries()
+        latest = {}  # artifact path -> id of the last entry that records it
+        for i, e in enumerate(entries):
+            for art in e.get("artifacts", []):
+                latest[art["path"]] = i
         prev_hash = "genesis"
-        for i, e in enumerate(self._entries()):
+        for i, e in enumerate(entries):
             chain = e.pop("chain")
             if e.get("id") != i:
                 problems.append(f"entry {i}: id mismatch ({e.get('id')})")
@@ -119,6 +134,8 @@ class ExperimentLog:
                 problems.append(f"entry {i}: chain hash mismatch (log was edited)")
             prev_hash = chain
             for art in e.get("artifacts", []):
+                if latest[art["path"]] != i:
+                    continue  # superseded by a later pin of the same path
                 full = os.path.join(self.study_dir, art["path"])
                 if "sha256" in art:
                     if os.path.exists(full) and _sha256(full) != art["sha256"]:
