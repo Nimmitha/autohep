@@ -1,0 +1,20 @@
+# Data payloads — never committed
+*.root
+data/
+studies/
+corpus/papers/*/
+corpus/index/
+
+# Generated outputs
+*.png
+*.pdf
+*.pkl
+*.npz
+*.json.gz
+__pycache__/
+*.pyc
+.pytest_cache/
+.pixi/
+
+# Study repos are independent git repos; never tracked here
+!templates/**

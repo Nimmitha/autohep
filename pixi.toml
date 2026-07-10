@@ -1,0 +1,39 @@
+[project]
+name = "autohep"
+version = "0.1.0"
+description = "Autonomous rare-decay HEP analysis framework (JFC-style): phase-gated agents, review board, literature RAG, pythonic stack."
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+python = ">=3.11"
+numpy = ">=1.26"
+scipy = ">=1.11"
+uproot = ">=5.0"
+awkward = ">=2.5"
+hist = ">=2.7"
+boost-histogram = ">=1.4"
+matplotlib = ">=3.8"
+mplhep = ">=0.3"
+pyhf = ">=0.7"
+iminuit = ">=2.25"
+xgboost = ">=2.0"
+scikit-learn = ">=1.3"
+jinja2 = ">=3.1"
+requests = ">=2.31"
+pytest = ">=7.4"
+pandoc = ">=3.1"
+tectonic = ">=0.15"
+
+# zfit is optional (heavy TensorFlow dependency). stat_toolkit uses pyhf for
+# binned CLs and scipy/iminuit for unbinned parametric fits; install zfit only
+# if a study genuinely needs its model zoo:
+#   pixi add --pypi zfit
+
+[tasks]
+test = "pytest tests/ -q"
+
+# Fallback when pixi is unavailable (e.g. this WSL host): a conda env named
+# `autohep` with the same package list, created via
+#   mamba create -n autohep python=3.11 pip
+#   pip install uproot awkward hist matplotlib mplhep pyhf iminuit xgboost scikit-learn scipy jinja2 pytest requests
