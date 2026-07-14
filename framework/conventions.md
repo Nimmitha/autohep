@@ -61,5 +61,26 @@ artifact includes a compliance table against this list.
 25. Analysis notes and the final letter in LaTeX (revtex or cms-tdr-like article
     class), built reproducibly (tectonic preferred, latexmk fallback).
 26. Every number in the text must be regenerable from logged artifacts — no
-    hand-typed results.
+    hand-typed results. This traceability is satisfied via the appendix of
+    item 29, never via inline process references.
 27. Citations resolve on INSPIRE-HEP; arXiv IDs included.
+28. **Register**: analysis notes and papers are written for a physicist reader
+    in standard collaboration style. Framework/process vocabulary is FORBIDDEN
+    in title, abstract, body text, figure captions, and table captions —
+    including but not limited to: "Human", "orchestrator", "analyst",
+    "arbiter", "reviewer", "Category A/B/C", "iteration N", "verdict",
+    "log entry", "chain hash", "manifest", "freeze vN", "obligation",
+    "tier-1/tier-2", "work-order", "gate", "escalation". Decisions are stated
+    in the collective analysis voice with their physics justification ("we
+    adopt X because Y"); human rulings and review outcomes appear as ordinary
+    analysis decisions. Standard physics usage of otherwise-reserved words
+    (e.g. a "blinded" region, a fit "iteration" in the numerical sense) is
+    fine — the test is whether a collaboration reader outside this framework
+    would find the sentence normal.
+29. **Reproducibility appendix**: the mapping from quoted numbers and
+    decisions to experiment-log entries, artifact hashes, and code commits
+    lives in one dedicated appendix ("Reproducibility record"), as tables.
+    Body text carries no entry ids or hashes.
+30. Process history (review iterations, remediations, adjudications) may be
+    summarized in that appendix as an analysis-history note; it is never
+    woven through the physics narrative.
