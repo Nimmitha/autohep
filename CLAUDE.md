@@ -61,7 +61,7 @@ review board.
 ## Environment
 
 Declared in `pixi.toml`. On this host use the conda env `autohep`:
-`/home/nimmitha/miniconda3/envs/autohep/bin/python`. Stack: uproot/awkward/hist,
+`<conda-prefix>/envs/autohep/bin/python`. Stack: uproot/awkward/hist,
 XGBoost, pyhf + scipy/iminuit, matplotlib+mplhep, LaTeX. No ROOT, no TMVA, no Combine.
 
 ## Starting a study

@@ -8,6 +8,8 @@ drafting — given only a minimal physics goal and data locations. The framework
 carries no channel-specific physics; each analysis lives in its own git repo
 under `studies/`.
 
+> **Note:** this framework was built with Claude Code (AI-assisted) as an experiment, and it drives Claude Code in turn. It is research code, not a validated analysis tool, and it contains no collaboration data.
+
 ## How it works
 
 | JFC layer | here |

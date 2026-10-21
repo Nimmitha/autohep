@@ -29,9 +29,9 @@ Creates `studies/<study-name>/` as an independent git repository.
    root) and the study's own `.claude/settings.json` (defense in depth), e.g.:
    ```json
    {"permissions": {"deny": [
-       "Read(//home/nimmitha/LPCfiles/run2/**)",
-       "Read(//home/nimmitha/.claude/projects/**)",
-       "Read(//home/nimmitha/.claude/plans/**)"
+       "Read(//<ABSOLUTE_PATH_TO_PRIOR_ANALYSIS_CODE>/**)",
+       "Read(~/.claude/projects/**)",
+       "Read(~/.claude/plans/**)"
    ]}}
    ```
    Add any extra paths the user names as prior-knowledge sources to exclude.
